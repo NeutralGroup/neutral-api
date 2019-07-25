@@ -1,0 +1,14 @@
+python_library(
+    name='client',
+    sources=rglobs('client/*.py'),
+    dependencies=[
+        'resources:compiled-contracts',
+        'resources:configs',
+        'src/protobuf:user-api-python',
+        '3rdparty/python:protobuf',
+        '3rdparty/python:grpcio',
+        '3rdparty/python:ecdsa',
+        '3rdparty/python:pyOpenSSL',
+        '3rdparty/python:web3',
+    ]
+)

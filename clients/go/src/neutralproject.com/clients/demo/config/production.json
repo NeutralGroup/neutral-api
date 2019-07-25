@@ -1,0 +1,9 @@
+{
+  "user_gateway_server": "production-grpc-api.neutralproject.com:8081",
+  "tls": true,
+  "tls_certificate_file": "keys/production/production.crt",
+  "tls_key_file": "client.pem",
+  "ca_file": "keys/production/production.ca",
+  "ethereum_network": "https://mainnet.infura.io/v3/cdda06dcefac458d9454e05a8a14cea7",
+  "contract_address": "0x0C6144c16af288948C8fdB37fD8fEc94bfF3d1d9"
+}

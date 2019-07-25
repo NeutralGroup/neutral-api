@@ -1,0 +1,9 @@
+{
+	"user_gateway_server": "test-grpc-api.neutralproject.com:8081",
+	"tls": false,
+	"tls_certificate_file": "",
+	"tls_key_file": "",
+	"ca_file": "",
+    "ethereum_network": "http://test-ethereum-api.neutralproject.com:8646",
+    "contract_address": "0x260BC24ad31340238F39a7BfAEB4AB99aEBD942c"
+}

@@ -1,0 +1,12 @@
+{
+  "host": "test-grpc-api.neutralproject.com",
+  "port": 8081,
+  "use-tls": false,
+  "gateway-public-key": {
+    "type": "public",
+    "format": "DER",
+    "value": "3056301006072a8648ce3d020106052b8104000a034200047b83ad6afb1209f3c82ebeb08c0c5fa9bf6724548506f2fb4f991e2287a77090177316ca82b0bdf70cd9dee145c3002c0da1d92626449875972a27807b73b42e"
+  },
+  "contract-address": "0x260BC24ad31340238F39a7BfAEB4AB99aEBD942c",
+  "eth-node": "http://test-ethereum-api.neutralproject.com:8646"
+}

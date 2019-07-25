@@ -1,0 +1,35 @@
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+
+# pants .pids
+.pids
+
+# YARD artifacts
+.yardoc
+_yardoc
+doc/
+.idea/
+.DS_Store
+
+# Docs / Slate
+docs/*.gem
+docs/*.rbc
+docs/.bundle
+docs/.config
+docs/coverage
+docs/InstalledFiles
+docs/lib/bundler/man
+docs/pkg
+docs/rdoc
+docs/spec/reports
+docs/test/tmp
+docs/test/version_tmp
+docs/tmp
+docs/build/
+docs/.cache
+docs/.vagrant
+docs/.sass-cache
+

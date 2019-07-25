@@ -1,0 +1,45 @@
+syntax="proto3";
+package neutralservice;
+
+/* Accounts */
+import "common.proto";
+
+option java_multiple_files = true;
+option java_package = "com.neutralproject.lib.services.rpc";
+option java_outer_classname = "accounts";
+
+
+message UserAccountInfo {
+    string name = 1; // Entity Name
+    string tier = 2; // private, etc
+}
+
+message AccountRequest {
+    UserID userID = 1; //
+}
+
+message SignedAccountRequest {
+    Signature signature = 1;
+    AccountRequest wrapped = 2;
+}
+
+message AccountInfo {
+    string uuid = 1; // UUID for Internal Use
+    string tier = 2; // private, etc
+    string name = 3; // Entity Name
+    UserID userID = 4; //
+    Pubkey publicKey = 5; // Account Public Key
+    Price bidSpread = 6; // Bid Spread
+    Price askSpread = 7; // Ask Spread
+    uint32 expirationBlocks = 8; // # of Blocks until expiration
+    uint64 expirationTime = 9; // Time increment until expiration
+    double minBidQuantity = 10; //
+    double maxBidQuantity = 11; //
+    double minAskQuantity = 12; //
+    double maxAskQuantity = 13; //
+}
+
+// Account mapping UUID -> Account
+message Accounts {
+ map<string, AccountInfo> accounts = 1;
+}

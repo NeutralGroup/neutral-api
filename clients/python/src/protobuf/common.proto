@@ -1,0 +1,76 @@
+syntax="proto3";
+package neutralservice;
+
+option java_multiple_files = true;
+option java_package = "com.neutralproject.lib.services.rpc";
+option java_outer_classname = "common";
+
+import "google/protobuf/any.proto";
+
+/* Protocol Buffer Definitions for the Neutral external verified RFQ protocol */
+
+/* Common Definitions */
+message UserID {
+    PubkeyHash sourcePubkeyHash = 1; // Public key hash of Source
+}
+
+message SessionToken {
+    string token = 1; // opaque
+    UtcMicroTime duration = 2; // Time until expiration
+}
+
+message SystemStatus {
+    uint32 status = 1; // System status
+}
+
+message UtcMicroTime {
+    uint64 utcMicroTime = 1; // none
+}
+
+message Empty {
+}
+
+message Signature {
+    string method = 1; // ECDSA, etc
+    bytes signature = 2; // none
+    bytes pubKeyFingerprint = 3; // optional
+}
+
+message PubkeyHash {
+    bytes hash = 1; // Sha256 Public key hash
+}
+
+message Pubkey {
+    bytes pubkey = 1; //
+}
+
+message Price {
+    double value = 1; // External Price
+}
+
+message Address {
+    string value = 1; // none
+    string addressType = 2; // none
+}
+
+message InstrumentID {
+    string symbol = 1; // none
+    Address address = 2; // none
+}
+
+message HeartbeatRequest {
+    UtcMicroTime time = 1; // to synchronize the clock
+}
+
+message Heartbeat {
+    UtcMicroTime time = 1; // to synchronize the clock
+    SystemStatus status = 2; // status code
+}
+
+message CanonicalResponse {
+    string canonical = 1; // Canonical JSON Encoded Object
+}
+
+message Anything {
+   google.protobuf.Any message = 1;
+}

@@ -1,0 +1,35 @@
+syntax="proto3";
+package neutralservice;
+
+import "common.proto";
+
+option java_multiple_files = true;
+option java_package = "com.neutralproject.lib.services.rpc";
+option java_outer_classname = "InstrumentProto";
+
+
+/* Instruments */
+
+message SymbolAtExchange {
+    string symbol = 1; // TUSD
+    string exchange = 2; // Exchange identifier
+}
+
+message InstrumentDefinition {
+    string issuer = 1; // Issuing Entity If Any
+    InstrumentID instrumentID = 2; // Internal Symbol Name
+    uint32 decimals = 3; // Token decimals
+    repeated SymbolAtExchange symbolAtExchange = 4; // Symbol Mapping
+}
+
+message InstrumentRequest {
+}
+
+message InstrumentResponse {
+    repeated InstrumentDefinition instrumentDefinitions = 1; // Instrument information
+}
+
+message SignedInstrumentResponse {
+    Signature signature = 1;
+    InstrumentResponse wrapped = 2;
+}

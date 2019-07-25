@@ -1,0 +1,100 @@
+// modified from https://raw.githubusercontent.com/grpc/grpc-java/master/examples/build.gradle
+plugins {
+    id 'application'
+    id 'com.google.protobuf' version '0.8.8'
+    id 'idea'
+}
+
+configurations {
+    alpnagent
+}
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+    maven { // The google mirror is less flaky than mavenCentral()
+        url "https://maven-central.storage-download.googleapis.com/repos/central/data/"
+    }
+    mavenLocal()
+}
+
+// Java 9 and above breaks the SSL library
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+def grpcVersion = '1.20.0'
+def protobufVersion = '3.7.1'
+def protocVersion = protobufVersion
+def web3j = '4.2.0'
+def bouncy = '1.61'
+def alpnAgent = '2.0.9'
+
+dependencies {
+    alpnagent "org.mortbay.jetty.alpn:jetty-alpn-agent:$alpnAgent"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-okhttp:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "com.google.guava:guava:27.1-jre"
+    implementation "org.web3j:crypto:$web3j"
+    implementation "org.web3j:core:$web3j"
+    implementation "org.bouncycastle:bcprov-jdk15on:$bouncy"
+    implementation "com.lambdista:try:0.3.1"
+
+    compileOnly "javax.annotation:javax.annotation-api:1.2"
+
+    // examples/advanced need this for JsonFormat
+    implementation "com.google.protobuf:protobuf-java-util:${protobufVersion}"
+
+    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+
+    testImplementation "io.grpc:grpc-testing:${grpcVersion}"
+    testImplementation "junit:junit:4.12"
+    testImplementation "org.mockito:mockito-core:2.25.1"
+}
+
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
+    }
+}
+
+// Inform IDEs like IntelliJ IDEA, Eclipse or NetBeans about the generated code.
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
+}
+
+startScripts.enabled = false
+
+compileJava {
+     options.compilerArgs << '-Xlint:deprecation,unchecked'
+     options.fork = true
+     options.forkOptions.executable = 'javac'  
+}
+
+task runContributor(type: JavaExec) {
+    mainClassName = 'com.neutralproject.external.clients.app.contributor.Contributor'
+    jvmArgs "-javaagent:" + configurations.alpnagent.asPath
+    main = mainClassName
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task contributor(type: CreateStartScripts) {
+    mainClassName = 'com.neutralproject.external.clients.app.contributor.Contributor'
+    applicationName = 'neutral-contributor'
+    outputDir = new File(project.buildDir, 'tmp')
+    classpath = startScripts.classpath
+}
+
+applicationDistribution.into('bin') {
+    from(contributor)
+    fileMode = 0755
+}
