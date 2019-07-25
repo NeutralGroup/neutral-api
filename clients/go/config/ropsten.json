@@ -1,0 +1,9 @@
+{
+	"user_gateway_server": "ropsten-grpc-api.neutralproject.com:8081",
+	"tls": false,
+	"tls_certificate_file": "",
+	"tls_key_file": "",
+	"ca_file": "",
+    "ethereum_network": "https://ropsten.infura.io/v3/c59131dc3793450ea035c087faae3772",
+    "contract_address": "0x51Cd01e92315Ea908380836d6bA746470B26037a"
+}

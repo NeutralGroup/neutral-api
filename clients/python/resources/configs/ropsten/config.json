@@ -1,0 +1,13 @@
+{
+  "host": "ropsten-grpc-api.neutralproject.com",
+  "port": 8081,
+  "use-tls": false,
+  "gateway-public-key": {
+    "type": "public",
+    "format": "DER",
+    "value": "3056301006072a8648ce3d020106052b8104000a034200047b83ad6afb1209f3c82ebeb08c0c5fa9bf6724548506f2fb4f991e2287a77090177316ca82b0bdf70cd9dee145c3002c0da1d92626449875972a27807b73b42e"
+  },
+  "gas-price": 3000000000,
+  "gas-limit": 3000000,
+  "eth-node": "https://ropsten.infura.io/v3/c59131dc3793450ea035c087faae3772"
+}

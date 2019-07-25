@@ -1,0 +1,121 @@
+syntax="proto3";
+package neutralservice;
+
+import "common.proto";
+
+option java_multiple_files = true;
+option java_package = "com.neutralproject.lib.services.rpc";
+option java_outer_classname = "QuoteProto";
+
+
+/* Subscriptions */
+
+message SubscribeRequest {
+    InstrumentID instrument = 1; // Instrument Identifier NUSD
+}
+
+/* Price Quotes */
+
+/*
+option java_multiple_files = true;
+option java_package = "com.neutralproject.lib.services.rpc";
+option java_outer_classname = "BaseQuoteProto";
+*/
+
+message Pair {
+    InstrumentID baseCurrency = 1; //
+    InstrumentID quoteCurrency = 2; //
+}
+
+message SubQuote {
+    Pair pair = 1; //
+    Price bid = 2; // Bid
+    Price ask = 3; //
+    double minBidQuantity = 4; //
+    double maxBidQuantity = 5; //
+    double minAskQuantity = 6; //
+    double maxAskQuantity = 7; //
+}
+
+message BaseSubQuote {
+    SubQuote quote = 1; //
+    Price nav = 2; // Net asset Value
+}
+
+message BaseQuote {
+    UtcMicroTime createdAt = 1; // Quote generated time
+    uint64 atBlockNo = 2; // Last Block number at quote time
+    uint64 sessionId = 3; // Session Identifier
+    uint64 sequence = 4; // Internal Sequence #
+    repeated string flags = 5; // a list of flags (default: empty)
+    repeated BaseSubQuote subQuotes = 6; // Quote Records
+}
+
+message SignedBaseQuote {
+    Signature signature = 1;
+    BaseQuote wrapped = 2;
+}
+
+message UserQuote {
+    string tier = 1; // public, tier-1, etc
+    SignedBaseQuote signedBaseQuote = 2; // Signed Base Quote
+    repeated SubQuote subQuotes = 3; // Quote Sub Record
+    string quoteId = 4; // unique quote id
+    UtcMicroTime createdAt = 5; // quote generated time
+}
+
+message SignedUserQuote {
+    Signature signature = 1;
+    UserQuote wrapped = 2;
+}
+
+/* Commitment Protocol */
+
+message CommitmentRecord {
+    InstrumentID Instrument = 1; // ID of instrument
+    string OrderType = 2; // BID or ASK
+    double Quantity = 3; // Quantity
+    SignedUserQuote Quote = 4; // Relayed price packet
+}
+
+message CommitRequest {
+    CommitmentRecord Commitment = 1; // A single commitment records
+}
+
+message PartialResponse {
+    bytes Expiry = 1; // Expire Time
+    uint32 Session = 2; // Session ID
+    uint32 Sequence = 3; // Sequence Number
+    repeated CommitmentRecord Commitment = 4; // Commitment sub record
+}
+
+/* Commitment Protocol -- Single commit i.e for wallets */
+
+message ImmediateCommitRequest {
+    Address SourceAccount = 1; // Vault address of funds, msg.sender validator
+    Address DestinationAccount = 2; // Vault address where funds will be deposited
+    CommitmentRecord Commitment = 3; // A single commitment sub record
+}
+
+/* Commitment Protocol -- Finalization */
+
+message FinalCommitResponse {
+    Signature Signature = 1; // Signature Authority Signed canonical
+    bytes _nonce = 2; // On chain nonce
+    string _feeDestination = 3; // Fee Vault Address
+    bytes _expirationDate = 4; // Expiration Date
+    bytes _expirationBlock = 5; // Expiration Block
+    string _source = 6; // Source of funds
+    string _destination = 7; // Destination of funds
+    string _instrument = 8; // Address of token
+    bytes _instrumentQuantity = 9; // Amount to add or subtract
+    uint32 _instrumentOperation = 10; // Addition and Subtraction
+    bytes _neutralQuantity = 11; // Amount to add or subtract
+    bytes _fee = 12; // Assessed spread fee in Neutral
+    bytes _neutralBoundary = 13; // Neutral bounds check
+}
+
+message SignedFinalCommitResponse {
+    Signature signature = 1;
+    FinalCommitResponse wrapped = 2;
+}

@@ -1,0 +1,43 @@
+syntax="proto3";
+package neutralservice;
+
+
+option java_multiple_files = true;
+option java_package = "com.neutralproject.services.rpc";
+option java_outer_classname = "UserGatewayRpcServiceProto";
+
+
+import "accounts.proto";
+import "instruments.proto";
+import "quotes.proto";
+
+/* GRPC Service Definitions */
+
+import "common.proto";
+
+/* External User Facing Neutral market services */
+service UserGateway {
+  rpc getPrivateSessionToken (Empty) returns (SessionToken) {}
+  rpc getPublicSessionToken (Empty) returns (SessionToken) {}
+  rpc accountInfo(Empty) returns (UserAccountInfo) {}
+  rpc getInstrumentDefinitions (InstrumentRequest) returns (SignedInstrumentResponse) {}
+  rpc subscribeToUserQuotes (SubscribeRequest) returns (stream SignedUserQuote) {}
+  rpc execute (ImmediateCommitRequest) returns (SignedFinalCommitResponse) {}
+}
+
+/* Smart Contract Signature Services */
+service Validator {
+  rpc execute (ImmediateCommitRequest) returns (SignedFinalCommitResponse) {}
+}
+
+/* Internal Account Management */
+service AccountManagement {
+  rpc getAccount (AccountRequest) returns (AccountInfo) {}
+  rpc setAccount (AccountInfo) returns (AccountInfo) {}
+  rpc listAccounts (Empty) returns (Accounts) {}
+}
+
+/* Canonicalization Services */
+service Canonical {
+  rpc canonicalize (Anything) returns (CanonicalResponse) {}
+}
