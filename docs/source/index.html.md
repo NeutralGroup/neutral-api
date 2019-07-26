@@ -2,16 +2,13 @@
 title: Neutral gRPC API
 
 language_tabs: # must be one of https://git.io/vQNgJ
-  - proto 
-  - go
-  - java
+  - protobuf
   - python
   - javascript
 
 toc_footers:
 
 includes:
-  - errors
 
 search: true
 ---
@@ -54,7 +51,7 @@ The API is specified in the following files.
 [`neutralservices.proto`] (./protobuf/neutralservices.proto) contains the definitions for the API calls.
 
 ## Calls (defined in neutralservices.proto)
-```
+```protobuf
 service UserGateway {
   rpc getPrivateSessionToken (Empty) returns (SessionToken) {}
   rpc getPublicSessionToken (Empty) returns (SessionToken) {}
@@ -63,6 +60,26 @@ service UserGateway {
   rpc subscribeToUserQuotes (SubscribeRequest) returns (stream SignedUserQuote) {}
   rpc execute (ImmediateCommitRequest) returns (SignedFinalCommitResponse) {}
 }
+```
+```python
+channel = grpc.insecure_channel('ropsten-grpc-api.neutralproject.com:8081')
+stub = neutralservices_pb2_grpc.UserGatewayStub(channel)
+stub.getPrivateSessionToken(Empty)
+stub.getPublicSessionToken(Empty)
+stub.getInstrumentDefinitions(InstrumentRequest)
+stub.accountInfo(Empty, Metadata)
+stub.subscribeToUserQuotes(SubscribeRequest, Metadata)
+stub.execute(ImmediateCommitRequest, Metadata)
+```
+
+```javascript
+const client = new UserGatewayPromiseClient(NEUTRAL_PROXY_URL);
+client.getPublicSessionToken(Empty);
+client.getPrivateSessionToken(Empty);
+client.getInstrumentDefinitions(InstrumentRequest);
+client.accountInfo(Empty, Metadata);
+client.subscribeToUserQuotes(SubscribeRequest, Metadata);
+client.execute(ImmediateCommitRequest, Metadata);
 ```
 
 `getPrivateSessionToken` and `getPublicSessionToken` are unauthenticated calls to obtain
@@ -75,7 +92,7 @@ for all products on the platform.
 required a signed session token in the gRPC metadata, as explained below.
 
 ## Signed Responses
-```
+```protobuf
 message Signature {
     string method = 1; // ecdsa-ethereum
     bytes signature = 2;
@@ -98,14 +115,17 @@ for signed_user_quote in stub.subscribeToUserQuotes(.....):
 ```
 To obtain the actual data in a signed message, the client simply access the `wrapped` field.
 
+```javascript
+/* Client setup omitted */
+
+client.subscribeToUserQuotes(...).on('data', (signedUserQuote, error) => {
+  const userQuote = signedUserQuote.getWrapped();
+  const baseQuote = userQuote.getSignedbasequote().getWrapped();
+  const subQuotes = baseQuote.getSubquotesList();
+});
+```
 
 ## Unauthenticated Calls
-```go
-TODO
-```
-```java
-TODO
-```
 ```python
 import grpc
 import instruments_pb2
@@ -118,30 +138,24 @@ for definition in signed.wrapped.instrumentDefinitions:
     print(definition)
 ```
 ```javascript
-TODO
+const { Empty } = require('./common_pb');
+
+/* Client setup omitted */
+
+const sessionToken = await client.getPublicSessionToken(new Empty(), {});
+return sessionToken.getToken();
 ```
 These are `getPrivateSessionToken`, `getPublicSessionToken` and `getInstrumentDefinitions`.
 A client can simply call them to obtain the results.
 
 ## Authenticated Calls: Sessions, Authentication and Accounts
-```proto
+```protobuf
 message SessionToken {
     string token = 1; // opaque
     UtcMicroTime duration = 2; // Time until expiration
 }
 ```
-Most service calls exposed by the gRPC endpoint requires an authenticated session.
-To authenticate itself, a client must first obtain a private or public **session token**.
-The private tokens are for those clients that have accounts with Neutral; the public
-tokens are for everyone else. The corresponding gRPC calls are `getPrivateSessionToken`
-and `getPublicSessionToken`, respectively.
 
-```go
-TODO
-```
-```java
-TODO
-```
 ```python
 import common_pb2
 import grpc
@@ -169,6 +183,7 @@ const s = await web3Signer.signMessage(token);
 const signature = s.substr(-2) + s.substr(0, s.length - 2);
 const grpcMeta = { 'session-token': token, 'user-signature': signature };
 ```
+
 To authenticate itself, a client computes an Ethereum signature and attaches the token itself
 (i.e., `SessionToken.token`) and the signature to the `metadata` field of subsequent gRPC
 calls. The key used in computing the signature is the private key for an Ethereum
@@ -194,12 +209,6 @@ client.
 # NUSD Pricing Quotes
 
 ## Streaming Quotes
-```go
-TODO
-```
-```java
-TODO
-```
 ```python
 import common_pb2
 import grpc
@@ -245,7 +254,7 @@ Neutral prices are streamed to the clients via the authenticated gRPC call `subs
 
 
 ## Parsing Quotes
-```proto
+```protobuf
 /* protobuf definition begins */
 message UserQuote {
     string tier = 1; // public, tier-1, etc
@@ -311,7 +320,7 @@ Executing against an `NUSD` consists of two steps: Securing a price commitment a
 the `NUSD` contract.
 
 ## Secure a Price Commitment
-```proto
+```protobuf
 message CommitmentRecord {
     InstrumentID Instrument = 1; // ID of instrument
     string OrderType = 2; // BID or ASK
@@ -354,14 +363,6 @@ can extract the `FinalCommitResponse`. It is the `FinalCommitResponse` that the 
 uses to create a transaction for the `NUSD` contract.
 
 ## Settle on the NUSD contract
-```go
-TODO
-```
-
-```java
-TODO
-```
-
 ```python
 commitment = stub.execute(...).wrapped
 signature = commitment.Signature.signature
@@ -404,7 +405,36 @@ web3.eth.sendRawTransaction(signed_txn.rawTransaction)
 ```
 
 ```javascript
-TODO
+  /* Client setup omitted */
+
+  const NeutralTokenContract = new web3.eth.Contract(
+    NEUTRAL_TOKEN_ABI, // ABI as JSON object
+    NEUTRAL_TOKEN_ADDRESS, // Contract address
+  );
+
+  const commitment = await client.execute(requestObject, sessionMetadata);
+  NeutralTokenContract.methods.settle(
+    // A custom function such as decodeBinary may be required if
+    // your Ethereum interface does not accept raw binary data as returned
+    // by the Neutral gRPC endpoints.
+    decodeBinary(commitment.nonce),
+    commitment.feedestination,
+    decodeBinary(commitment.expirationdate),
+    decodeBinary(commitment.expirationblock),
+    commitment.source,
+    commitment.destination,
+    commitment.instrument,
+    decodeBinary(commitment.instrumentquantity),
+    commitment.instrumentoperation,
+    decodeBinary(commitment.neutralquantity),
+    decodeBinary(commitment.neutralboundary),
+    decodeBinary(commitment.fee),
+
+    // Base 64 encoded binary -> hex string -> bytes
+    reencodeAsHex(commitment.signature.signature),
+  ).send({}, (error, hash) => {
+    // Wait for confirmation
+  });
 ```
 The client constructs an Ethereum transaction against the `NUSD` contract using the
 parameters provided in the `FinalCommitResponse`. The parameters including the
